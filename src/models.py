@@ -12,7 +12,7 @@ class User(db.Model):
 
 
     def __repr__(self):
-        return '<User %r>' % self.username
+        return '<User %r>' % self.id
 
     def serialize(self):
         return {
@@ -55,8 +55,8 @@ class Planet(db.Model):
         return {
             "id": self.id,
             "name": self.name,
-            "population": self.gender,
-            "terrain": self.birth_year,
+            "population": self.population,
+            "terrain": self.terrain,
         }
 
 
