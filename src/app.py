@@ -37,6 +37,92 @@ def sitemap():
     return generate_sitemap(app)
 
 
+# GET ALL PEOPLE
+@app.route('/people')
+def get_people():
+    all_people = People.query.all()
+    return jsonify(list(map(lambda item: item.serialize(), all_people))), 200
+
+
+# GET ONE PEOPLE'S INFO
+@app.route('/people/<int:people_id>', methods=['GET'])
+def get_one_people(people_id = None):
+
+    one_people = People.query.filter_by(id = people_id).one_or_none()
+    
+    if one_people is None:
+        return jsonify({"message": "PEOPLE DOESN'T EXIST"}), 400
+    return jsonify(one_people.serialize()), 200
+
+
+#ADD PEOPLE
+@app.route('/people', methods=['POST'])
+def add_people():
+
+    data = request.json
+
+    if data is None or data is {}:
+        return jsonify({"message": "there's no data"}), 400
+    
+    people = People()
+    people.name = data.get('name', None)
+    people.gender = data.get('gender', None)
+    people.birth_year = data.get('birth_year', None)
+
+    db.session.add(people)
+
+    try:
+        db.session.commit()
+    except Exception as err:
+        db.session.rollback()
+        return jsonify({'message': err.args}), 500    
+    return jsonify({"message" : "PEOPLE ADDED"}), 200  
+
+
+
+# GET ALL PLANET
+@app.route('/planet')
+def get_planet():
+    all_planet = Planet.query.all()
+    return jsonify(list(map(lambda item: item.serialize(), all_planet))), 200
+
+
+# GET ONE PLANET'S INFO
+@app.route('/planet/<int:planet_id>', methods=['GET'])
+def get_one_planet(planet_id = None):
+
+    one_planet = Planet.query.filter_by(id = planet_id).one_or_none()
+    
+    if one_planet is None:
+        return jsonify({"message": "PLANET DOESN'T EXIST"}), 400
+    return jsonify(one_planet.serialize()), 200
+
+
+#ADD PLANET
+@app.route('/planet', methods=['POST'])
+def add_planet():
+
+    data = request.json
+
+    if data is None or data is {}:
+        return jsonify({"message": "there's no data"}), 400
+    
+    planet = Planet()
+    planet.name = data.get('name', None)
+    planet.population = data.get('population', None)
+    planet.terrain = data.get('terrain', None)
+
+    db.session.add(planet)
+
+    try:
+        db.session.commit()
+    except Exception as err:
+        db.session.rollback()
+        return jsonify({'message': err.args}), 500    
+    return jsonify({"message" : "PLANET ADDED"}), 200 
+
+
+
 # la única forma de crear usuarios es directamente en la base de datos usando el admin.
 # GET USERS
 @app.route('/user', methods=['GET'])
@@ -118,11 +204,37 @@ def delete_people(user_id = None, people_id = None):
 
     del_people = Fav_people.query.filter_by(user_id=user_id, people_id=people_id).first()
     if del_people is None:
-        return jsonify({'message': 'PEOPLE NOT FOUND'})
+        return jsonify({'message': 'PEOPLE NOT FOUND'}), 400
 
     db.session.delete(del_people)
 
-    try
+    try:
+        db.session.commit()
+    except Exception as error:
+        db.session.rollback()
+        return jsonify({'message': error.args}), 500
+    return jsonify({'message': 'PEOPLE DELETED FROM FAVORITES'}), 200
+
+
+# DELETE PLANET FROM FAVORITES
+@app.route('/user/<int:user_id>/favorites/planet/<int:planet_id>', methods=['DELETE'])
+def delete_planet(user_id = None, planet_id = None):
+
+    del_planet = Fav_planet.query.filter_by(user_id=user_id, planet_id=planet_id).first()
+    if del_planet is None:
+        return jsonify({'message': 'PLANET NOT FOUND'}), 400
+
+    db.session.delete(del_planet)
+
+    try:
+        db.session.commit()
+    except Exception as error:
+        db.session.rollback()
+        return jsonify({'message': error.args}), 500
+    return jsonify({'message': 'PLANET DELETED FROM FAVORITES'}), 200
+
+
+
 
 
 
